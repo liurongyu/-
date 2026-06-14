@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌈 宠物乐园 Pet Paradise 🌈</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Microsoft YaHei', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 50%, #ffecd2 100%);
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  /* 飘浮云朵背景 */
+  .cloud {
+    position: fixed;
+    font-size: 60px;
+    opacity: 0.6;
+    animation: float 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes float {
+    0% { transform: translateX(-100px); }
+    100% { transform: translateX(calc(100vw + 100px)); }
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 标题 */
+  .header {
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 3.5em;
+    background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 3px 3px 6px rgba(255,255,255,0.5);
+    animation: rainbow 3s linear infinite;
+    background-size: 300% 300%;
+  }
+  @keyframes rainbow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .header p {
+    font-size: 1.3em;
+    color: #555;
+    margin-top: 10px;
+  }
+
+  /* 统计信息栏 */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 20px 40px;
+    border-radius: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 25px;
+    border-right: 2px dashed #ffe0e0;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-label { font-size: 1em; color: #888; }
+  .stat-value {
+    font-size: 2em;
+    font-weight: bold;
+    color: #ff6b6b;
+    margin-top: 5px;
+  }
+
+  /* 宠物乐园 */
+  .park {
+    background: linear-gradient(to bottom, #87ceeb 0%, #87ceeb 40%, #90ee90 40%, #228b22 100%);
+    border-radius: 40px;
+    padding: 40px;
+    min-height: 500px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+
+  /* 太阳 */
+  .sun {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 80px;
+    animation: spin 10s linear infinite;
+    filter: drop-shadow(0 0 20px #ffd93d);
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* 宠物卡片区 */
+  .pets-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    margin-top: 40px;
+  }
+
+  .pet-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 25px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    animation: bounce-in 0.6s ease-out;
+  }
+  @keyframes bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .pet-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  }
+  .pet-card.selected {
+    box-shadow: 0 0 0 5px #ff6b6b, 0 15px 40px rgba(255,107,107,0.4);
+    transform: translateY(-5px);
+  }
+
+  .pet-emoji {
+    font-size: 5em;
+    display: block;
+    margin-bottom: 10px;
+    transition: transform 0.3s;
+    animation: wiggle 3s ease-in-out infinite;
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  .pet-card:hover .pet-emoji {
+    animation: jump 0.6s ease-in-out;
+  }
+  @keyframes jump {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-30px); }
+  }
+
+  .pet-name {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  .pet-type {
+    font-size: 1em;
+    color: #888;
+    margin-bottom: 15px;
+  }
+
+  .pet-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-icon { font-size: 1.2em; }
+  .status-bar {
+    flex: 1;
+    height: 12px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .status-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease, background 0.3s;
+  }
+  .status-text {
+    font-size: 0.9em;
+    color: #666;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* 操作按钮 */
+  .action-panel {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+  }
+  .action-title {
+    text-align: center;
+    font-size: 1.8em;
+    color: #ff6b6b;
+    margin-bottom: 20px;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .btn {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    font-family: inherit;
+  }
+  .btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+  .btn:active { transform: translateY(0); }
+  .btn-feed { background: linear-gradient(135deg, #ff9a56, #ff6b6b); }
+  .btn-play { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+  .btn-sleep { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+  .btn-clean { background: linear-gradient(135deg, #55efc4, #00b894); }
+  .btn-add { background: linear-gradient(135deg, #fd79a8, #e84393); }
+  .btn-clear { background: linear-gradient(135deg, #b2bec3, #636e72); }
+
+  /* 消息提示 */
+  .message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.95);
+    padding: 15px 30px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    font-size: 1.2em;
+    color: #333;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .message.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(20px);
+  }
+
+  /* 飞动的心形/食物特效 */
+  .floating-effect {
+    position: absolute;
+    font-size: 2em;
+    pointer-events: none;
+    animation: float-up 1.5s ease-out forwards;
+    z-index: 100;
+  }
+  @keyframes float-up {
+    0% { transform: translateY(0) scale(0.5); opacity: 1; }
+    100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+  }
+
+  /* 添加宠物面板 */
+  .add-panel {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(255, 235, 245, 0.9);
+    border-radius: 20px;
+    text-align: center;
+  }
+  .add-panel.active {
+    display: block;
+    animation: fade-in 0.3s;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .pet-choice {
+    display: inline-block;
+    font-size: 3em;
+    margin: 10px;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 3px solid transparent;
+  }
+  .pet-choice:hover {
+    transform: scale(1.1);
+    border-color: #ff6b6b;
+  }
+
+  .tip {
+    text-align: center;
+    color: #666;
+    font-size: 1em;
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 2em; }
+    .pets-area { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+    .pet-emoji { font-size: 3.5em; }
+    .btn { padding: 12px 20px; font-size: 0.9em; }
+  }
+</style>
+</head>
+<body>
+  <!-- 飘浮云朵 -->
+  <div class="cloud" style="top: 10%; animation-duration: 25s;">☁️</div>
+  <div class="cloud" style="top: 30%; animation-duration: 35s; animation-delay: -10s;">☁️</div>
+  <div class="cloud" style="top: 55%; animation-duration: 30s; animation-delay: -20s;">⛅</div>
+
+  <div class="container">
+    <div class="header">
+      <h1>🌈 宠物乐园 Pet Paradise 🌈</h1>
+      <p>欢迎来到奇妙的宠物世界！在这里你可以喂养、玩耍、照顾你的萌宠朋友 🎉</p>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">🌟 宠物总数</span>
+        <span class="stat-value" id="totalPets">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">🎮 互动次数</span>
+        <span class="stat-value" id="totalInteractions">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">❤️ 幸福值</span>
+        <span class="stat-value" id="happinessScore">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">👑 乐园等级</span>
+        <span class="stat-value" id="parkLevel">Lv.1</span>
+      </div>
+    </div>
+
+    <div class="park">
+      <div class="sun">☀️</div>
+      <div class="pets-area" id="petsArea">
+        <!-- 宠物卡片动态生成 -->
+      </div>
+    </div>
+
+    <div class="action-panel">
+      <h2 class="action-title">🎯 操作中心 Action Center</h2>
+      <div class="action-buttons">
+        <button class="btn btn-feed" onclick="feedPet()">🍗 喂食</button>
+        <button class="btn btn-play" onclick="playWithPet()">🎾 玩耍</button>
+        <button class="btn btn-sleep" onclick="petSleep()">😴 睡觉</button>
+        <button class="btn btn-clean" onclick="cleanPet()">🛁 洗澡</button>
+        <button class="btn btn-add" onclick="toggleAddPanel()">➕ 添加宠物</button>
+        <button class="btn btn-clear" onclick="clearAll()">🗑️ 重置乐园</button>
+      </div>
+
+      <div class="add-panel" id="addPanel">
+        <p style="font-size:1.2em; margin-bottom:15px; color:#e84393;">✨ 选择你想添加的小伙伴：</p>
+        <div id="petChoices">
+          <!-- 宠物选择 -->
+        </div>
+      </div>
+
+      <p class="tip">💡 小提示：点击任意宠物可选中它，然后通过上方按钮与它互动！记得常来照顾它们哦~</p>
+    </div>
+  </div>
+
+  <div class="message" id="message"></div>
+
+<script>
+  // 宠物类型定义
+  const PET_TYPES = {
+    '🐶': { name: '狗狗', emoji: '🐶', defaultName: '旺财', sound: '汪汪！' },
+    '🐱': { name: '猫咪', emoji: '🐱', defaultName: '咪咪', sound: '喵喵~' },
+    '🐰': { name: '兔兔', emoji: '🐰', defaultName: '小白', sound: '噗噗!' },
+    '🐹': { name: '仓鼠', emoji: '🐹', defaultName: '小米', sound: '吱吱~' },
+    '🐸': { name: '青蛙', emoji: '🐸', defaultName: '呱呱', sound: '呱呱呱!' },
+    '🐤': { name: '小鸡', emoji: '🐤', defaultName: '蛋宝', sound: '叽叽叽!' },
+    '🦊': { name: '狐狸', emoji: '🦊', defaultName: '阿狸', sound: '咻咻~' },
+    '🐼': { name: '熊猫', emoji: '🐼', defaultName: '团子', sound: '嗯嗯!' },
+    '🐷': { name: '猪猪', emoji: '🐷', defaultName: '佩奇', sound: '哼哼~' },
+    '🦄': { name: '独角兽', emoji: '🦄', defaultName: '彩虹', sound: '叮铃铃✨' },
+    '🐢': { name: '乌龟', emoji: '🐢', defaultName: '慢慢', sound: '......' },
+    '🐙': { name: '章鱼', emoji: '🐙', defaultName: '八爪', sound: '咕噜噜~' },
+  };
+
+  // 游戏状态
+  let pets = [];
+  let selectedPetId = null;
+  let totalInteractions = 0;
+  let happinessScore = 0;
+  let petIdCounter = 0;
+
+  // 初始化 - 送3只宠物
+  function initPark() {
+    addPet('🐶');
+    addPet('🐱');
+    addPet('🐰');
+    renderPetChoices();
+    renderPets();
+    updateStats();
+
+    // 每5秒降低状态值（模拟时间流逝）
+    setInterval(() => {
+      pets.forEach(pet => {
+        pet.hunger = Math.max(0, pet.hunger - 2);
+        pet.happiness = Math.max(0, pet.happiness - 1);
+        pet.energy = Math.max(0, pet.energy - 1);
+        pet.cleanliness = Math.max(0, pet.cleanliness - 1);
+      });
+      renderPets();
+      updateStats();
+    }, 5000);
+  }
+
+  // 添加宠物
+  function addPet(typeKey) {
+    const type = PET_TYPES[typeKey];
+    if (!type) return;
+
+    const pet = {
+      id: ++petIdCounter,
+      type: typeKey,
+      name: type.defaultName,
+      hunger: 80,
+      happiness: 80,
+      energy: 80,
+      cleanliness: 80,
+    };
+    pets.push(pet);
+    showMessage(`🎉 欢迎新成员 ${type.emoji} ${pet.name} 加入乐园！`);
+    renderPets();
+    updateStats();
+  }
+
+  // 渲染宠物选择区
+  function renderPetChoices() {
+    const container = document.getElementById('petChoices');
+    container.innerHTML = Object.keys(PET_TYPES).map(key => 
+      `<div class="pet-choice" onclick="addPet('${key}')">${key}</div>`
+    ).join('');
+  }
+
+  // 切换添加面板
+  function toggleAddPanel() {
+    document.getElementById('addPanel').classList.toggle('active');
+  }
+
+  // 渲染宠物
+  function renderPets() {
+    const container = document.getElementById('petsArea');
+    if (pets.length === 0) {
+      container.innerHTML = '<p style="text-align:center; font-size:2em; color:#888; padding:60px;">🏜️ 乐园里没有宠物，快来添加吧！</p>';
+      return;
+    }
+
+    container.innerHTML = pets.map(pet => {
+      const type = PET_TYPES[pet.type];
+      const avg = (pet.hunger + pet.happiness + pet.energy + pet.cleanliness) / 4;
+      const statusColor = avg > 70 ? '#00b894' : avg > 40 ? '#feca57' : '#ff6b6b';
+
+      return `
+        <div class="pet-card ${selectedPetId === pet.id ? 'selected' : ''}" 
+             onclick="selectPet(${pet.id})" 
+             id="pet-${pet.id}">
+          <span class="pet-emoji">${pet.type}</span>
+          <div class="pet-name">${pet.name}</div>
+          <div class="pet-type">${type.name} #${pet.id}</div>
+          <div class="pet-status">
+            ${renderStatus('🍖', '饱食度', pet.hunger)}
+            ${renderStatus('😊', '心情', pet.happiness)}
+            ${renderStatus('⚡', '精力', pet.energy)}
+            ${renderStatus('✨', '清洁', pet.cleanliness)}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 渲染状态条
+  function renderStatus(icon, label, value) {
+    const color = value > 70 ? 'linear-gradient(90deg, #00b894, #55efc4)' 
+                : value > 40 ? 'linear-gradient(90deg, #fdcb6e, #feca57)' 
+                : 'linear-gradient(90deg, #ff6b6b, #ff7675)';
+    return `
+      <div class="status-row">
+        <span class="status-icon">${icon}</span>
+        <div class="status-bar">
+          <div class="status-fill" style="width:${value}%; background:${color};"></div>
+        </div>
+        <span class="status-text">${Math.round(value)}</span>
+      </div>
+    `;
+  }
+
+  // 选择宠物
+  function selectPet(id) {
+    selectedPetId = id;
+    renderPets();
+    const pet = pets.find(p => p.id === id);
+    if (pet) {
+      showMessage(`🎯 已选中 ${pet.type} ${pet.name}，快来和它互动吧！`);
+    }
+  }
+
+  // 获取当前操作的宠物
+  function getTargetPet() {
+    if (pets.length === 0) {
+      showMessage('😢 乐园里还没有宠物哦~先添加一只吧！');
+      return null;
+    }
+    if (selectedPetId === null) {
+      // 自动选一只
+      selectedPetId = pets[0].id;
+      renderPets();
+    }
+    return pets.find(p => p.id === selectedPetId);
+  }
+
+  // 喂食
+  function feedPet() {
+    const pet = getTargetPet();
+    if (!pet) return;
+    if (pet.hunger >= 100) {
+      showMessage(`😋 ${pet.name} 已经吃饱了！`);
+      return;
+    }
+    pet.hunger = Math.min(100, pet.hunger + 25);
+    pet.happiness = Math.min(100, pet.happiness + 10);
+    addEffect(pet.id, '🍗');
+    showMessage(`${pet.type} ${PET_TYPES[pet.type].sound} ${pet.name} 吃得很开心！`);
+    afterAction();
+  }
+
+  // 玩耍
+  function playWithPet() {
+    const pet = getTargetPet();
+    if (!pet) return;
+    if (pet.energy < 15) {
+      showMessage(`😪 ${pet.name} 太累了，让它休息一下吧~`);
+      return;
+    }
+    pet.happiness = Math.min(100, pet.happiness + 25);
+    pet.energy = Math.max(0, pet.energy - 15);
+    pet.hunger = Math.max(0, pet.hunger - 10);
+    addEffect(pet.id, '❤️');
+    showMessage(`🎮 ${pet.name} 玩得好开心！${PET_TYPES[pet.type].sound}`);
+    afterAction();
+  }
+
+  // 睡觉
+  function petSleep() {
+    const pet = getTargetPet();
+    if (!pet) return;
+    if (pet.energy >= 100) {
+      showMessage(`⚡ ${pet.name} 精力充沛，不想睡觉！`);
+      return;
+    }
+    pet.energy = Math.min(100, pet.energy + 35);
+    pet.cleanliness = Math.max(0, pet.cleanliness - 5);
+    addEffect(pet.id, '💤');
+    showMessage(`😴 ${pet.name} 呼呼大睡中...`);
+    afterAction();
+  }
+
+  // 洗澡
+  function cleanPet() {
+    const pet = getTargetPet();
+    if (!pet) return;
+    if (pet.cleanliness >= 100) {
+      showMessage(`✨ ${pet.name} 已经干干净净了！`);
+      return;
+    }
+    pet.cleanliness = Math.min(100, pet.cleanliness + 40);
+    pet.happiness = Math.min(100, pet.happiness + 5);
+    addEffect(pet.id, '🫧');
+    showMessage(`🛁 ${pet.name} 洗得香喷喷的！`);
+    afterAction();
+  }
+
+  // 通用动作后处理
+  function afterAction() {
+    totalInteractions++;
+    const avgScore = pets.reduce((sum, p) => 
+      sum + (p.hunger + p.happiness + p.energy + p.cleanliness) / 4, 0) / pets.length;
+    happinessScore = Math.round(avgScore);
+    renderPets();
+    updateStats();
+  }
+
+  // 飞动特效
+  function addEffect(petId, emoji) {
+    const card = document.getElementById(`pet-${petId}`);
+    if (!card) return;
+    const effect = document.createElement('div');
+    effect.className = 'floating-effect';
+    effect.textContent = emoji;
+    effect.style.left = (30 + Math.random() * 40) + '%';
+    effect.style.top = '20%';
+    card.appendChild(effect);
+    setTimeout(() => effect.remove(), 1500);
+  }
+
+  // 更新统计信息
+  function updateStats() {
+    document.getElementById('totalPets').textContent = pets.length;
+    document.getElementById('totalInteractions').textContent = totalInteractions;
+    document.getElementById('happinessScore').textContent = happinessScore;
+    const level = Math.min(10, Math.floor((totalInteractions + pets.length * 5) / 20) + 1);
+    document.getElementById('parkLevel').textContent = 'Lv.' + level;
+  }
+
+  // 提示消息
+  let messageTimer = null;
+  function showMessage(text) {
+    const msg = document.getElementById('message');
+    msg.textContent = text;
+    msg.classList.add('show');
+    clearTimeout(messageTimer);
+    messageTimer = setTimeout(() => {
+      msg.classList.remove('show');
+    }, 2500);
+  }
+
+  // 重置乐园
+  function clearAll() {
+    if (pets.length === 0) return;
+    if (!confirm('⚠️ 确定要重置整个乐园吗？所有宠物将被清除！')) return;
+    pets = [];
+    selectedPetId = null;
+    totalInteractions = 0;
+    happinessScore = 0;
+    petIdCounter = 0;
+    renderPets();
+    updateStats();
+    showMessage('🏠 乐园已重置，新的冒险开始啦！');
+  }
+
+  // 启动
+  initPark();
+</script>
+</body>
+</html>
